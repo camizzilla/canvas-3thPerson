@@ -3,10 +3,58 @@ const json = {
         id: 0,
         name: 'casa',
         directions: {
-            n: true,
-            s: true,
-            e: true,
-            w: true,
+            n: 2,
+            s: 3,
+            e: 4,
+            w: 5,
+        },
+        objects: [],
+        hotspots: []
+    },
+    {
+        id: 1,
+        name: 'north',
+        directions: {
+            n: null,
+            s: 1,
+            e: null,
+            w: null,
+        },
+        objects: [],
+        hotspots: []
+    },
+    {
+        id: 2,
+        name: 'south',
+        directions: {
+            n: 1,
+            s: null,
+            e: null,
+            w: null,
+        },
+        objects: [],
+        hotspots: []
+    },
+    {
+        id: 3,
+        name: 'est',
+        directions: {
+            n: null,
+            s: null,
+            e: null,
+            w: 1,
+        },
+        objects: [],
+        hotspots: []
+    },
+    {
+        id: 4,
+        name: 'west',
+        directions: {
+            n: null,
+            s: null,
+            e: 1,
+            w: null,
         },
         objects: [],
         hotspots: []
@@ -16,8 +64,8 @@ const json = {
 
 let canvas = document.querySelector("#canvas");
 let ctx = canvas.getContext("2d");
-const WIDTH = canvas.width = 600;
-const HEIGHT = canvas.height = 800;
+const WIDTH = canvas.width = 400;
+const HEIGHT = canvas.height = 600;
 
 let rooms = [];
 let gui;
@@ -92,19 +140,20 @@ const checkImage = path =>
         img.src = path;
     });
 
-const generateClass = (image) => {
+const generateClass = (image, index) => {
     gui = new Gui();
-    generateRooms(image);
+    generateRooms(image, index);
 }
 
-const generateRooms = (image) => {
-    rooms = json.rooms.map(room => new Room(room.id, image, room.directions, room.objects, room.hotspots));
+const generateRooms = (image, index) => {
+    const room = json.rooms[index]
+    rooms.push(new Room(room.id, image, room.directions, room.objects, room.hotspots));
 }
 
 const loadAssets = () => {
     let roomsImgPath = json.rooms.map(room => `/assets/rooms/${room.id}.jpg`);
-    loadImages(roomsImgPath).then(path => path.map(image => {
-        generateClass(image);
+    loadImages(roomsImgPath).then(path => path.map((image, index) => {
+        generateClass(image, index);
         init()
     }));
 
