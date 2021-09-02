@@ -119,7 +119,11 @@ class Gui {
             x: 0,
             y: 0
         };
-        this.canvas.addEventListener('click', (e) => this.mouseClickEventHandler(e))
+        this.mouseClick = false;
+
+        this.canvas.addEventListener('mousedown', (e) => this.mouseClickEventHandler(e, 'down'))
+        this.canvas.addEventListener('mouseup', (e) => this.mouseClickEventHandler(e, 'up'))
+        
         this.canvas.addEventListener('mousemove', (e) => this.mouseMoveEventHandler(e))
     }
 
@@ -141,10 +145,18 @@ class Gui {
         ctx.fillRect(...args);
     }
 
-    mouseClickEventHandler(e) {
-        let mouse = this.getMousePos(e);
-        this.setDirection(mouse);
-        this.setDirections(rooms[index].directions)
+    mouseClickEventHandler(e, mode) {
+        if( mode === 'down' ){
+            let mouse = this.getMousePos(e);
+            if( !this.IsDescrMode ){
+                this.setDirection(mouse);
+                this.setDirections(rooms[index].directions)
+            }
+            this.mouseClick = e.button;
+            this.IsDescrMode = !this.IsDescrMode;
+        } else {
+            this.mouseClick = false;
+        }
     }
 
     setDirection(mouse){
@@ -177,18 +189,20 @@ class Gui {
     }
 
     description(descr){
-        ctx.save()
-        ctx.fillStyle = "#fff";
-        ctx.globalAlpha = 0.5;
-        ctx.fillRect(0, 0, WIDTH, HEIGHT)
-        ctx.globalAlpha = 1;
-
-        ctx.font = `16px Arial`;
-        ctx.fillRect(0, HEIGHT - 100, WIDTH, 100)
-        ctx.fillStyle = "#000";
-        ctx.fillText(descr, 10, HEIGHT - 80); 
-        
-        ctx.restore()
+        if( this.IsDescrMode ){
+            ctx.save()
+            ctx.fillStyle = "#fff";
+            ctx.globalAlpha = 0.5;
+            ctx.fillRect(0, 0, WIDTH, HEIGHT)
+            ctx.globalAlpha = 1;
+    
+            ctx.font = `16px Arial`;
+            ctx.fillRect(0, HEIGHT - 100, WIDTH, 100)
+            ctx.fillStyle = "#000";
+            ctx.fillText(descr, 10, HEIGHT - 80); 
+            
+            ctx.restore()
+        }
     }
 }
 
@@ -211,7 +225,7 @@ class Room {
     }
 
     setHotspot(mouseMove) {
-        this.hotspots.map(hotspot => hotspot.isHovered(mouseMove))
+        !this.IsDescrMode && this.hotspots.map(hotspot => hotspot.look(mouseMove))
     }
 }
 
@@ -227,11 +241,15 @@ class Hotspot {
         this.fontSize = '18';
     }
 
-    isHovered(mouseMove) {
+    look(mouseMove) {
         if ( mouseMove ){
-            mouseMove.x > this.x && mouseMove.x < this.x + this.w && 
-            mouseMove.y > this.y && mouseMove.y < this.y + this.h && this.drawDescr(mouseMove);
+            this.isHovered(mouseMove) && this.drawDescr(mouseMove);
         }
+    }
+
+    isHovered(mouseMove) {
+        return mouseMove.x > this.x && mouseMove.x < this.x + this.w && 
+        mouseMove.y > this.y && mouseMove.y < this.y + this.h
     }
 
     drawDescr({x, y}){
